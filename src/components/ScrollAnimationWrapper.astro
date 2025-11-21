@@ -1,0 +1,56 @@
+---
+interface Props {
+  class?: string;
+  animationClass?: string;
+}
+
+const { class: className = '', animationClass = 'animate-fade' } = Astro.props;
+---
+
+<div
+  class={`${className} intersect opacity-0 ${animationClass}`}
+  data-scroll-animate
+>
+  <slot />
+</div>
+
+<script>
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -100px 0px',
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.removeAttribute('no-intersect');
+        observer.unobserve(entry.target);
+      } else {
+        entry.target.setAttribute('no-intersect', '');
+      }
+    });
+  }, observerOptions);
+
+  document.querySelectorAll('[data-scroll-animate]').forEach((el) => {
+    el.setAttribute('no-intersect', '');
+    observer.observe(el);
+  });
+</script>
+
+<style>
+  [data-scroll-animate] {
+    transition:
+      opacity 0.6s ease-out,
+      transform 0.6s ease-out;
+  }
+
+  [data-scroll-animate][no-intersect] {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+
+  [data-scroll-animate]:not([no-intersect]) {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
